@@ -16,11 +16,9 @@ package k8sadmission
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"os"
 	"sort"
@@ -32,10 +30,10 @@ import (
 	"github.com/valyala/fastjson"
 )
 
-const (
-	webServerShutdownTimeoutSecs = 5
-	webServerEventChanBufSize    = 50
-)
+// const (
+// 	webServerShutdownTimeoutSecs = 5
+// 	webServerEventChanBufSize    = 50
+// )
 
 // TODO: remove webserver logic, as this shuld be done by a kube0--audit-rest sidecar
 //
@@ -47,10 +45,10 @@ func (k *Plugin) Open(params string) (source.Instance, error) {
 	}
 
 	switch u.Scheme {
-	case "http":
-		return k.OpenWebServer(u.Host, u.Path, false)
-	case "https":
-		return k.OpenWebServer(u.Host, u.Path, true)
+	// case "http":
+	// 	return k.OpenWebServer(u.Host, u.Path, false)
+	// case "https":
+	// 	return k.OpenWebServer(u.Host, u.Path, true)
 	case "": // by default, fallback to opening a filepath
 		trimmed := strings.TrimSpace(params)
 
@@ -127,99 +125,99 @@ func (k *Plugin) OpenReader(r io.ReadCloser) (source.Instance, error) {
 		source.WithInstanceEventSize(uint32(k.Config.MaxEventSize)))
 }
 
-// OpenWebServer opens a source.Instance event stream that receives K8S Audit
-// Events by starting a server and listening for JSON webhooks. The expected
-// JSON format is the one of K8S API Server webhook backend
-// (see: https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/#webhook-backend).
-func (k *Plugin) OpenWebServer(address, endpoint string, ssl bool) (source.Instance, error) {
-	ctx, cancelCtx := context.WithCancel(context.Background())
-	serverEvtChan := make(chan []byte, webServerEventChanBufSize)
-	evtChan := make(chan source.PushEvent)
+// // OpenWebServer opens a source.Instance event stream that receives K8S Audit
+// // Events by starting a server and listening for JSON webhooks. The expected
+// // JSON format is the one of K8S API Server webhook backend
+// // (see: https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/#webhook-backend).
+// func (k *Plugin) OpenWebServer(address, endpoint string, ssl bool) (source.Instance, error) {
+// 	ctx, cancelCtx := context.WithCancel(context.Background())
+// 	serverEvtChan := make(chan []byte, webServerEventChanBufSize)
+// 	evtChan := make(chan source.PushEvent)
 
-	// launch webserver gorountine. This listens for webhooks coming from
-	// the k8s api server and sends every valid payload to serverEvtChan so
-	// that an HTTP response can be sent as soon as possible. Each payload is
-	// then parsed to extract the list of audit events contained by the
-	// event-parser goroutine
-	m := http.NewServeMux()
-	s := &http.Server{Addr: address, Handler: m}
-	sendBody := func(b []byte) {
-		defer func() {
-			if r := recover(); r != nil {
-				k.logger.Println("request dropped while shutting down server ")
-			}
-		}()
-		serverEvtChan <- b
-	}
-	m.HandleFunc(endpoint, func(w http.ResponseWriter, req *http.Request) {
-		if req.Method != "POST" {
-			http.Error(w, fmt.Sprintf("%s method not allowed", req.Method), http.StatusMethodNotAllowed)
-			return
-		}
-		if !strings.Contains(req.Header.Get("Content-Type"), "application/json") {
-			http.Error(w, "wrong Content Type", http.StatusBadRequest)
-			return
-		}
-		req.Body = http.MaxBytesReader(w, req.Body, int64(k.Config.WebhookMaxBatchSize))
-		bytes, err := ioutil.ReadAll(req.Body)
-		if err != nil {
-			msg := fmt.Sprintf("bad request: %s", err.Error())
-			k.logger.Println(msg)
-			http.Error(w, msg, http.StatusBadRequest)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		sendBody(bytes)
-	})
-	go func() {
-		defer close(serverEvtChan)
-		var err error
-		if ssl {
-			// note: the legacy K8S Audit implementation concatenated the key and cert PEM
-			// files, however this seems to be unusual. Here we use the same concatenated files
-			// for both key and cert, but we may want to split them (this seems to work though).
-			err = s.ListenAndServeTLS(k.Config.SSLCertificate, k.Config.SSLCertificate)
-		} else {
-			err = s.ListenAndServe()
-		}
-		if err != nil && err != http.ErrServerClosed {
-			evtChan <- source.PushEvent{Err: err}
-		}
-	}()
+// 	// launch webserver gorountine. This listens for webhooks coming from
+// 	// the k8s api server and sends every valid payload to serverEvtChan so
+// 	// that an HTTP response can be sent as soon as possible. Each payload is
+// 	// then parsed to extract the list of audit events contained by the
+// 	// event-parser goroutine
+// 	m := http.NewServeMux()
+// 	s := &http.Server{Addr: address, Handler: m}
+// 	sendBody := func(b []byte) {
+// 		defer func() {
+// 			if r := recover(); r != nil {
+// 				k.logger.Println("request dropped while shutting down server ")
+// 			}
+// 		}()
+// 		serverEvtChan <- b
+// 	}
+// 	m.HandleFunc(endpoint, func(w http.ResponseWriter, req *http.Request) {
+// 		if req.Method != "POST" {
+// 			http.Error(w, fmt.Sprintf("%s method not allowed", req.Method), http.StatusMethodNotAllowed)
+// 			return
+// 		}
+// 		if !strings.Contains(req.Header.Get("Content-Type"), "application/json") {
+// 			http.Error(w, "wrong Content Type", http.StatusBadRequest)
+// 			return
+// 		}
+// 		req.Body = http.MaxBytesReader(w, req.Body, int64(k.Config.WebhookMaxBatchSize))
+// 		bytes, err := ioutil.ReadAll(req.Body)
+// 		if err != nil {
+// 			msg := fmt.Sprintf("bad request: %s", err.Error())
+// 			k.logger.Println(msg)
+// 			http.Error(w, msg, http.StatusBadRequest)
+// 			return
+// 		}
+// 		w.WriteHeader(http.StatusOK)
+// 		sendBody(bytes)
+// 	})
+// 	go func() {
+// 		defer close(serverEvtChan)
+// 		var err error
+// 		if ssl {
+// 			// note: the legacy K8S Audit implementation concatenated the key and cert PEM
+// 			// files, however this seems to be unusual. Here we use the same concatenated files
+// 			// for both key and cert, but we may want to split them (this seems to work though).
+// 			err = s.ListenAndServeTLS(k.Config.SSLCertificate, k.Config.SSLCertificate)
+// 		} else {
+// 			err = s.ListenAndServe()
+// 		}
+// 		if err != nil && err != http.ErrServerClosed {
+// 			evtChan <- source.PushEvent{Err: err}
+// 		}
+// 	}()
 
-	// launch event-parser gorountine. This received webhook payloads
-	// and parses their content to extract the list of audit events contained.
-	// Then, events are sent to the Push-mode event source instance channel.
-	go func() {
-		defer close(evtChan)
-		var parser fastjson.Parser
-		for {
-			select {
-			case bytes, ok := <-serverEvtChan:
-				if !ok {
-					return
-				}
-				k.parseAuditEventsAndPush(&parser, bytes, evtChan)
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
+// 	// launch event-parser gorountine. This received webhook payloads
+// 	// and parses their content to extract the list of audit events contained.
+// 	// Then, events are sent to the Push-mode event source instance channel.
+// 	go func() {
+// 		defer close(evtChan)
+// 		var parser fastjson.Parser
+// 		for {
+// 			select {
+// 			case bytes, ok := <-serverEvtChan:
+// 				if !ok {
+// 					return
+// 				}
+// 				k.parseAuditEventsAndPush(&parser, bytes, evtChan)
+// 			case <-ctx.Done():
+// 				return
+// 			}
+// 		}
+// 	}()
 
-	// open new instance in with "push" prebuilt
-	return source.NewPushInstance(
-		evtChan,
-		source.WithInstanceContext(ctx),
-		source.WithInstanceClose(func() {
-			// on close, attempt shutting down the webserver gracefully
-			timedCtx, cancelTimeoutCtx := context.WithTimeout(ctx, time.Second*webServerShutdownTimeoutSecs)
-			defer cancelTimeoutCtx()
-			s.Shutdown(timedCtx)
-			cancelCtx()
-		}),
-		source.WithInstanceEventSize(uint32(k.Config.MaxEventSize)),
-	)
-}
+// 	// open new instance in with "push" prebuilt
+// 	return source.NewPushInstance(
+// 		evtChan,
+// 		source.WithInstanceContext(ctx),
+// 		source.WithInstanceClose(func() {
+// 			// on close, attempt shutting down the webserver gracefully
+// 			timedCtx, cancelTimeoutCtx := context.WithTimeout(ctx, time.Second*webServerShutdownTimeoutSecs)
+// 			defer cancelTimeoutCtx()
+// 			s.Shutdown(timedCtx)
+// 			cancelCtx()
+// 		}),
+// 		source.WithInstanceEventSize(uint32(k.Config.MaxEventSize)),
+// 	)
+// }
 
 // todo: optimize this to cache by event number
 func (k *Plugin) String(evt sdk.EventReader) (string, error) {

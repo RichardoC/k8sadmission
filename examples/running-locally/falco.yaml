@@ -1,0 +1,12 @@
+plugins:
+  - name: k8sadmission
+    library_path: /example/libk8sadmission.so
+    open_params: /example/test_files/kube-audit-rest.log.huge.json
+  - name: json
+    library_path: libjson.so
+    init_config: ""
+    open_params: ""
+load_plugins: [k8sadmission, json]
+json_output: true
+stdout_output:
+  enabled: true

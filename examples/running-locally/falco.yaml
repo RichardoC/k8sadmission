@@ -7,6 +7,7 @@ plugins:
     init_config: ""
     open_params: ""
 load_plugins: [k8sadmission, json]
+priority: debug
 json_output: true
 stdout_output:
   enabled: true

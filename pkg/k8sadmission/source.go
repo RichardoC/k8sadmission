@@ -295,6 +295,8 @@ func (k *Plugin) parseSingleAuditEventJSON(value *fastjson.Value) *source.PushEv
 		res.Err = fmt.Errorf("failed to get timestamp from object %+v err :%+v", value, err)
 		return res
 	}
+	// Required as otherwise we lose the data
+	res.Data = value.MarshalTo(nil)
 
 	res.Timestamp = timestamp
 	return res

@@ -30,7 +30,7 @@
   condition: (evt.num > 0)
 
 - macro: k8s_admission_never_true
-  condition: (evt.num = 0)
+  condition: (kar.uid="123")
 
 # # Generally only consider audit events once the response has completed
 # - list: k8s_admission_stages
@@ -84,7 +84,7 @@
   condition: non_system_user and not kar.user.name in (allowed_k8s_users) and not kar.user.name in (eks_allowed_k8s_users)
   output: K8s Operation performed by user not in allowed list of users (uid=%kar.uid user=%kar.user.name target=%kar.target.name/%kar.target.resource verb=%kar.verb  )
   priority: WARNING
-  source: k8s_admissionz`
+  source: k8s_admission
   tags: [k8s]
 
 # In a local/user rules file, you could override this macro to
@@ -100,16 +100,19 @@
 #   condition: (kar.response.code startswith 2)
 
 - macro: kget
-  condition: kar.verb=get
+  condition: kar.verb=GET
 
 - macro: kcreate
-  condition: kar.verb=create
+  condition: kar.verb=CREATE
+
+- macro: kconnect
+  condition: kar.verb=CONNECT
 
 - macro: kmodify
-  condition: (kar.verb in (create,update,patch))
+  condition: (kar.verb in (CREATE,UPDATE,PATCH,ATTACH,CONNECT))
 
 - macro: kdelete
-  condition: kar.verb=delete
+  condition: kar.verb=DELETE
 
 - macro: pod
   condition: kar.target.resource=pods and not kar.target.subresource exists
@@ -144,14 +147,14 @@
 - macro: secret
   condition: kar.target.resource=secrets
 
-- macro: health_endpoint
-  condition: kar.uri=/healthz
+# - macro: health_endpoint
+#   condition: kar.uri=/healthz
 
-- macro: live_endpoint
-  condition: kar.uri=/livez
+# - macro: live_endpoint
+#   condition: kar.uri=/livez
 
-- macro: ready_endpoint
-  condition: kar.uri=/readyz
+# - macro: ready_endpoint
+#   condition: kar.uri=/readyz
 
 - rule: Create Disallowed Pod
   desc: >
@@ -289,7 +292,7 @@
 - rule: Exec Pod
   desc: >
     Detect any attempt to exec in a pod
-  condition: pod_subresource and kcreate and kar.target.subresource in (exec) and not user_known_exec_pod_activities
+  condition: kar.target.subresource == exec and not user_known_exec_pod_activities
   output: Exec to pod (user=%kar.user.name pod=%kar.target.name resource=%kar.target.resource ns=%kar.target.namespace action=%kar.target.subresource command=kar.req.exec.command)
   priority: NOTICE
   source: k8s_admission
@@ -297,8 +300,8 @@
 
 - rule: Attach to Pod
   desc: >
-    Detect any attempt to attachto a pod
-  condition: pod_subresource and kcreate and kar.target.subresource in (attach) and not user_known_exec_pod_activities
+    Detect any attempt to attach to a pod
+  condition: kar.target.subresource in (attach) and not user_known_exec_pod_activities
   output: Attach to pod (user=%kar.user.name pod=%kar.target.name resource=%kar.target.resource ns=%kar.target.namespace action=%kar.target.subresource)
   priority: NOTICE
   source: k8s_admission
@@ -680,6 +683,13 @@
   source: k8s_admission
   tags: [k8s]
 
+# - rule: Trigger on all events
+#   desc: Trigger on all events for debugging
+#   condition: kar.uid != "abc"
+#   output: Got an event (uid=%kar.uid)
+#   priority: DEBUG
+#   source: k8s_admission
+#   tags: [k8s]
 
 - macro: ingress
   condition: kar.target.resource=ingresses
@@ -745,17 +755,3 @@
   priority: ERROR
   source: k8s_admission
   tags: [k8s]
-
-# - rule: Untrusted Node Unsuccessfully Tried to Join the Cluster
-#   desc: >
-#     Detect an unsuccessful attempt to join the cluster for a node not in the list of allowed nodes.
-#   condition: >
-#     node
-#     and kcreate
-#     and not response_successful
-#     and not allow_all_k8s_nodes
-#     and not kar.target.name in (allowed_k8s_nodes)
-#   output: Node not in allowed list tried unsuccessfully to join the cluster  (user=%kar.user.name node=%kar.target.name reason=%kar.response.reason resource=%kar.target.resource)
-#   priority: WARNING
-#   source: k8s_admission
-#   tags: [k8s]

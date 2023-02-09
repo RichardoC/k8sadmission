@@ -140,6 +140,9 @@ func (e *Plugin) ExtractFromJSON(req sdk.ExtractRequest, jsonValue *fastjson.Val
 	// Not sure if possible
 	// case "kar.impuser.name":
 	// 	return e.extractFromKeys(req, jsonValue, "impersonatedUser", "username")
+
+	// The k8saudit plugin sets this as lower case but this should be uppercase to match
+	// k8s docs, and we'll match the k8s docs
 	case "kar.verb":
 		return e.extractFromKeys(req, jsonValue, "request", "operation")
 	// case "kar.uri":

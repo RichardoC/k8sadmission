@@ -307,9 +307,23 @@
   source: k8s_admission
   tags: [k8s]
 
+
+- macro: user_known_exec_portforward_activities
+  condition: (k8s_admission_never_true)
+
+- rule: Portforward
+  desc: >
+    Detect any attempt to portforward to a pod
+  condition: kar.target.subresource in (portforward) and not user_known_exec_portforward_activities
+  output: Portforward to pod (user=%kar.user.name pod=%kar.target.name resource=%kar.target.resource ns=%kar.target.namespace)
+  priority: NOTICE
+  source: k8s_admission
+  tags: [k8s]  
+
 - macro: user_known_pod_debug_activities
   condition: (k8s_admission_never_true)
 
+# TOOD: have someone with EphemeralContainers enabled test if this works
 # # Only works when feature gate EphemeralContainers is enabled
 # - rule: EphemeralContainers Created
 #   desc: >
@@ -749,7 +763,6 @@
   condition: >
     node
     and kcreate
-    
     and not allow_all_k8s_nodes
     and not kar.target.name in (allowed_k8s_nodes)
   output: Node not in allowed list successfully joined the cluster (user=%kar.user.name node=%kar.target.name resource=%kar.target.resource)

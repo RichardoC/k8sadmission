@@ -175,7 +175,7 @@ func (e *Plugin) ExtractFromJSON(req sdk.ExtractRequest, jsonValue *fastjson.Val
 	case "kar.target.resource":
 		return e.extractFromKeys(req, jsonValue, "request", "resource", "resource")
 	case "kar.target.subresource":
-		return e.extractFromKeys(req, jsonValue, "request", "subresource")
+		return e.extractFromKeys(req, jsonValue, "request", "subResource")
 	case "kar.req.binding.subjects":
 		return e.extractFromKeys(req, jsonValue, "request", "object", "subjects")
 	case "kar.req.binding.role":

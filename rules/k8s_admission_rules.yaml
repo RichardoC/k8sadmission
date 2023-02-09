@@ -27,7 +27,7 @@
 # TODO, fix this as it's faulty
 # Like always_true/always_false, but works with k8s audit events
 - macro: k8s_admission_always_true
-  condition: (evt.num > 0)
+  condition: (evt.num != -1)
 
 - macro: k8s_admission_never_true
   condition: (kar.uid="123")
@@ -513,21 +513,22 @@
   source: k8s_admission
   tags: [k8s]
 
-- rule: K8s ConfigMap Created
-  desc: Detect any attempt to create a configmap
-  condition: (kactivity and kcreate and configmap )
-  output: K8s ConfigMap Created (user=%kar.user.name configmap=%kar.target.name ns=%kar.target.namespace resource=%kar.target.resourcekar.req.configmap.data)
-  priority: INFO
-  source: k8s_admission
-  tags: [k8s]
+# TODO, uncomment
+# - rule: K8s ConfigMap Created
+#   desc: Detect any attempt to create a configmap
+#   condition: (kactivity and kcreate and configmap )
+#   output: K8s ConfigMap Created (user=%kar.user.name configmap=%kar.target.name ns=%kar.target.namespace resource=%kar.target.resourcekar.req.configmap.data)
+#   priority: INFO
+#   source: k8s_admission
+#   tags: [k8s]
 
-- rule: K8s ConfigMap Deleted
-  desc: Detect any attempt to delete a configmap
-  condition: (kactivity and kdelete and configmap )
-  output: K8s ConfigMap Deleted (user=%kar.user.name configmap=%kar.target.name ns=%kar.target.namespace resource=%kar.target.resourcekar.req.configmap.data)
-  priority: INFO
-  source: k8s_admission
-  tags: [k8s]
+# - rule: K8s ConfigMap Deleted
+#   desc: Detect any attempt to delete a configmap
+#   condition: (kactivity and kdelete and configmap )
+#   output: K8s ConfigMap Deleted (user=%kar.user.name configmap=%kar.target.name ns=%kar.target.namespace resource=%kar.target.resourcekar.req.configmap.data)
+#   priority: INFO
+#   source: k8s_admission
+#   tags: [k8s]
 
 - rule: K8s Namespace Created
   desc: Detect any attempt to create a namespace

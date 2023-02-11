@@ -94,7 +94,9 @@
 # allowed, by using the always_true macro. In the overridden macro, the condition
 # would look something like (kar.req.pod.containers.image.repository in (my-repo/my-image))
 - macro: allowed_k8s_containers
-  condition: (k8s_admission_always_true)
+  condition: kar.req.pod.containers.image in (pause:123)
+
+  # condition: (k8s_admission_always_true)
 
 # - macro: response_successful
 #   condition: (kar.response.code startswith 2)

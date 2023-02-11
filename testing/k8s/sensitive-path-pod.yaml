@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: busybox-sensitive-path
+  name: busybox-sensitive-path
+spec:
+  containers:
+  - image: busybox
+    name: busybox-sensitive-path
+    volumeMounts:
+    - mountPath: /sensitive/etc
+      name: sensitive
+  volumes:
+  - name: sensitive
+    hostPath:
+      path: /etc
+      type: Directory
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: busybox-privileged
+  name: busybox-privileged
+spec:
+  containers:
+  - image: busybox
+    name: busybox-privileged
+    securityContext: 
+      privileged: true
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}

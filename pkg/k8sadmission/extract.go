@@ -479,6 +479,7 @@ func (e *Plugin) arrayAsStringsWithDefault(values []*fastjson.Value, defaultValu
 }
 
 // note: this returns an error on nil values
+// TODO: fix this
 func (e *Plugin) readContainerImages(jsonValue *fastjson.Value, indexFilter int) ([]string, error) {
 	arr, err := e.getValuesRecursive(jsonValue, indexFilter, "request", "object", "spec", "containers", "image")
 	if err != nil {

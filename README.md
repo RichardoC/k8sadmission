@@ -150,6 +150,23 @@ Syscall event drop monitoring:
    - event drop detected: 0 occurrences
    - num times actions taken: 0
 ```
+
+### Steps to add new parsing and rules
+
+#### Declare the new fields
+
+Add them to `func (k *Plugin) Fields() []sdk.FieldEntry {` in `pkg/k8sadmission/fields.go`
+
+#### Add the new field extractions
+
+Add them to `func (e *Plugin) ExtractFromJSON(req sdk.ExtractRequest, jsonValue *fastjson.Value) error {` in `pkg/k8sadmission/extract.go`
+ 
+#### Add the new rules
+Update `rules/k8s_admission_rules.yaml`
+
+#### Add a test for the new rule and extraction
+Update `testing/generate-data.sh` and add any yaml that are required to `testing/k8s`
+
 ## Credits
 
 This module borrows heavily from the [k8saudit plugin](https://github.com/falcosecurity/plugins/tree/master/plugins/k8saudit) code

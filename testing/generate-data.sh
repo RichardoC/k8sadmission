@@ -1,19 +1,23 @@
-# working
 # - rule: Disallowed K8s User
+# working
 kubectl create ns disallowed-user
-# not working
 # - rule: Create Disallowed Pod
+# not working
 kubectl run -i -t busybox-creation --image=busybox --restart=Never
-# not working
 # - rule: Create Privileged Pod
-kubectl apply -f testing/k8s/privileged-pod.yaml 
 # not working
+kubectl apply -f testing/k8s/privileged-pod.yaml 
 # # - rule: Create Sensitive Mount Pod
+# not working
 kubectl apply -f testing/k8s/sensitive-path-pod.yaml 
 # - rule: Create HostNetwork Pod
-
+# not working
+kubectl apply -f testing/k8s/hostnetwork-pod.yaml 
 # - rule: Create HostPid Pod
+# not working
+kubectl apply -f testing/k8s/hostpid-pod.yaml
 # - rule: Create HostIPC Pod
+kubectl apply -f testing/k8s/hostipc-pod.yaml
 # - rule: Create NodePort Service
 # - rule: Create/Modify Configmap With Private Credentials
 # # - rule: Anonymous Request Allowed

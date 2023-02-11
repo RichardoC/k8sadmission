@@ -2,7 +2,7 @@
 # working
 kubectl create ns disallowed-user
 # - rule: Create Disallowed Pod
-# not working
+# working
 kubectl run -i -t busybox-creation --image=busybox --restart=Never
 # - rule: Create Privileged Pod
 # not working
@@ -17,13 +17,26 @@ kubectl apply -f testing/k8s/hostnetwork-pod.yaml
 # not working
 kubectl apply -f testing/k8s/hostpid-pod.yaml
 # - rule: Create HostIPC Pod
+# not working
 kubectl apply -f testing/k8s/hostipc-pod.yaml
 # - rule: Create NodePort Service
+# working
+kubectl apply -f testing/k8s/NodePort.yaml
 # - rule: Create/Modify Configmap With Private Credentials
-# # - rule: Anonymous Request Allowed
+# TODO
 # - rule: Exec Pod
+# working
+kubectl apply -f testing/k8s/sleep-forever-pod.yaml ;
+kubectl exec -it busybox-sleep-forever whoami
 # - rule: Attach to Pod
+# working
+kubectl apply -f testing/k8s/sleep-forever-pod.yaml ; 
+kubectl attach -it busybox-sleep-forever & PID=$! ; sleep 2; kill $PID
 # - rule: Portforward
+# working
+kubectl apply -f testing/k8s/NodePort.yaml ;
+kubectl port-forward svc/nodeport 8888:80 & PID=$! ; sleep 2; kill $PID
+
 # # - rule: EphemeralContainers Created
 # - rule: Create Disallowed Namespace
 # - rule: Pod Created in Kube Namespace

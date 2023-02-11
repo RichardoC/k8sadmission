@@ -167,6 +167,15 @@ Update `rules/k8s_admission_rules.yaml`
 #### Add a test for the new rule and extraction
 Update `testing/generate-data.sh` and add any yaml that are required to `testing/k8s`
 
+#### Running the tests
+
+
+```bash
+rdctl shell sudo cat "/var/lib/kubelet/pods/$(kubectl -n kube-audit-rest get po -l app=kube-audit-rest -ojsonpath='{.items[0].metadata.uid}' )/volumes/kubernetes.io~empty-dir/tmp/kube-audit-rest.log" > test_files/kube-audit-rest.log.huge.json ; ./examples/running-locally/run.sh
+```
+TODO, add testing steps
+
+
 ## Credits
 
 This module borrows heavily from the [k8saudit plugin](https://github.com/falcosecurity/plugins/tree/master/plugins/k8saudit) code

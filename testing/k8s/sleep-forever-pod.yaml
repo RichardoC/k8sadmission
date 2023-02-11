@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: busybox-sleep-forever
+  name: busybox-sleep-forever
+spec:
+  containers:
+  - image: busybox
+    name: busybox
+    command: ["tail"]
+    args: ["-f", "/dev/null"]
+  restartPolicy: Never

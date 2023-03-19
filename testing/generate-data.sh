@@ -36,10 +36,15 @@ kubectl attach -it busybox-sleep-forever & PID=$! ; sleep 2; kill $PID
 # working
 kubectl apply -f testing/k8s/NodePort.yaml ;
 kubectl port-forward svc/nodeport 8888:80 & PID=$! ; sleep 2; kill $PID
-
 # # - rule: EphemeralContainers Created
 # - rule: Create Disallowed Namespace
+# working
+kubectl create ns disallowed-ns
 # - rule: Pod Created in Kube Namespace
+# not working
+kubectl run busybox-creation-kube-system --image=busybox --restart=Never --namespace kube-system
+kubectl -n kube-system delete pod busybox-creation-kube-system
+
 # - rule: Service Account Created in Kube Namespace
 # - rule: System ClusterRole Modified/Deleted
 # - rule: Attach to cluster-admin Role

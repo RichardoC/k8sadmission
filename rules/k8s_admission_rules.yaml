@@ -771,3 +771,8 @@
   priority: ERROR
   source: k8s_admission
   tags: [k8s]
+
+- rule: Log all requests
+  desc: Log all events that k8sadmission recieved
+  condition: (jevt.value[/requestReceivedTimestamp] exists)
+  output: jevt

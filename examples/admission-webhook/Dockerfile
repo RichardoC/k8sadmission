@@ -20,7 +20,7 @@ COPY --from=builder /k8sadmission/libk8sadmission.so /usr/share/falco/plugins/
 # COPY --from=builder /usr/share/falco/plugins/* /usr/share/falco/plugins/
 
 
-
-ENTRYPOINT /usr/bin/falco -u -r /etc/falco/k8s_admission_rules.yaml --disable-source syscall
+# --unbuffered forces all events to show up quickly
+ENTRYPOINT /usr/bin/falco -u -r /etc/falco/k8s_admission_rules.yaml --disable-source syscall --unbuffered
 
 CMD [ "/bin/bash", "-c" ]

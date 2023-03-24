@@ -6,7 +6,7 @@ ROOT=$(git rev-parse --show-toplevel)
 
 cd $ROOT
 
-CONF_DIR=$ROOT/examples/admission-webhook/certs/
+CONF_DIR=$ROOT/examples/admission-webhook/certs
 
 TMP=$ROOT/tmp
 echo $TMP

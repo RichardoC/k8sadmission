@@ -1,7 +1,7 @@
 plugins:
   - name: k8sadmission
     library_path: /usr/share/falco/plugins/libk8sadmission.so
-    open_params: "https://:8443/k8sadmission"
+    open_params: "https://:8443/log-request"
     init_config:
       tlsCert: "/etc/tls/tls.crt"
       tlsKey: "/etc/tls/tls.key"

@@ -19,10 +19,10 @@ package k8sadmission
 
 import "github.com/falcosecurity/plugin-sdk-go/pkg/sdk"
 
-//TODO remove this safely
-
+// TODO: fix default paths based on Falco team feedback
 type PluginConfig struct {
-	SSLCertificate      string `json:"sslCertificate"       jsonschema:"title=SSL certificate,description=The SSL Certificate to be used with the HTTPS Webhook endpoint (Default: /etc/falco/falco.pem),default=/etc/falco/falco.pem"`
+	TLSCert             string `json:"tlsCert"       jsonschema:"title=SSL certificate,description=The SSL Certificate to be used with the HTTPS Webhook endpoint (Default: /etc/falco/falco.pem),default=/etc/falco/falco.pem"`
+	TLSKey              string `json:"tlsKey"       jsonschema:"title=SSL certificate,description=The SSL Certificate to be used with the HTTPS Webhook endpoint (Default: /etc/falco/falco.pem),default=/etc/falco/falco.pem"`
 	UseAsync            bool   `json:"useAsync"             jsonschema:"title=Use async extraction,description=If true then async extraction optimization is enabled (Default: true),default=true"`
 	MaxEventSize        uint64 `json:"maxEventSize"         jsonschema:"title=Maximum event size,description=Maximum size of single audit event (Default: 262144),default=262144"`
 	WebhookMaxBatchSize uint64 `json:"webhookMaxBatchSize"  jsonschema:"title=Maximum webhook request size,description=Maximum size of incoming webhook POST request bodies (Default: 12582912),default=12582912"`
@@ -30,7 +30,8 @@ type PluginConfig struct {
 
 // Resets sets the configuration to its default values
 func (k *PluginConfig) Reset() {
-	k.SSLCertificate = "/etc/falco/falco.pem"
+	k.TLSCert = "/etc/falco/falco.pem"
+	k.TLSKey = "/etc/falco/falco.pem"
 	k.UseAsync = true
 	k.MaxEventSize = uint64(sdk.DefaultEvtSize)
 

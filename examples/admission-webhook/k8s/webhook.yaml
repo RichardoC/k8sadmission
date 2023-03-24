@@ -1,0 +1,25 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration # Can also be a MutatingWebhookConfiguration if required
+metadata:
+  name: k8sadmission
+  labels:
+    app: k8sadmission
+webhooks:
+  - name: k8sadmission.k8sadmission.svc.cluster.local
+    failurePolicy: Ignore # Don't block requests if auditing fails
+    timeoutSeconds: 1 # To prevent excessively slowing everything
+    sideEffects: None
+    clientConfig:
+      service:
+        name: k8sadmission
+        namespace: k8sadmission
+        path: "/log-request"
+      caBundle: "$CABUNDLEB64" # To be replaced
+    rules: # To be reduced as needed
+      - operations: [ "*" ]
+        apiGroups: ["*"]
+        apiVersions: ["*"]
+        resources: ["*/*"]
+        scope: "*"     
+    admissionReviewVersions: ["v1"]
